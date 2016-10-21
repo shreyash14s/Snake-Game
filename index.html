@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Snake</title>
+		<link rel="stylesheet" type="text/css" href="SnakeStyle.css" />
+	</head>
+	<body>
+		<h1>Snake Game</h1>
+		<canvas width=820 height=520 id="canvas">
+			Canvas not supported.
+		</canvas><br>
+		<div class="btn">
+			<a href="SnakeNew.html"><button type="button">Another version</button></a>
+		</div>
+		<script type="text/javascript">
+			var canvas = document.getElementById('canvas'), 
+				ctx = canvas.getContext('2d'), 
+				w = canvas.width, 
+				h = canvas.height, 
+				grid = 20, 
+				anim, 
+				left = 37, right = 39, up = 38, down = 40;	//KeyCodes
+
+			function begin() {
+				// Make screen black.
+				ctx.fillStyle = "black";
+				ctx.fillRect(0, 0, w, h);
+				ctx.moveTo(0, 0);
+
+				px = 3*grid+30;	// Initial position x
+				py = 3*grid+30;	// 	and y
+				for (var i = 0; i < len; i++) {
+					snake.push([px - i*grid, py]);
+				};
+
+				for (var i = 0; i < grid/speed*len; i++) {
+					hist.unshift([px-speed*i, py]);
+				};
+
+				var fx = 30 + Math.floor(Math.random() * (w-60) / grid) * grid, 
+					fy = 30 + Math.floor(Math.random() * (h-60) / grid) * grid;
+
+				food = [fx, fy];
+
+				ctx.strokeStyle = "white";
+				ctx.font = "3em arial";
+				ctx.textAlign="center";
+				ctx.fillStyle = "orange";
+				ctx.fillText("Snake Game", w/2, h/2);
+				ctx.strokeText("Snake Game", w/2, h/2);
+				
+				ctx.fillStyle = "lightred";
+				ctx.font = "1.75em arial";
+				ctx.fillText("Click anywhere to begin.", w/2, h/2+50);
+
+				canvas.onclick = start;
+				window.onkeydown = function(e) {
+					if (e.keyCode == 32 || e.keyCode == 13) start();
+				}
+			}
+
+			function start() {
+				// Start drawing the game.
+				anim = requestAnimationFrame(draw);
+				canvas.onclick = null;
+				window.onkeydown = keydown;
+			}
+
+			var speed = 2.5;
+
+			function keydown(e) {
+				switch (e.keyCode) {
+					case up: 
+						if (cspeedY != speed) {
+							cspeedY = -speed;
+							cspeedX = 0;
+						}
+						e.preventDefault();
+						break;
+					case down: 
+						if (cspeedY != -speed) {
+							cspeedY = speed;
+							cspeedX = 0;
+						}
+						e.preventDefault();
+						break;
+					case left: 
+						if (cspeedX != speed) {
+							cspeedX = -speed;
+							cspeedY = 0;
+						}
+						e.preventDefault();
+						break;
+					case right: 
+						if (cspeedX != -speed) {
+							cspeedX = speed;
+							cspeedY = 0;
+						}
+						e.preventDefault();
+						break;
+					case 27: // ESC key.
+						pause();
+				}
+			}
+
+			var px, py, r = 15, // Snake's head location and its radius
+				speedX = speed, speedY = 0,	
+				cspeedX = speed, cspeedY = 0, 
+				len = 6, 		// Initial length of snake.
+				snake = [], 	// Array of snake's body.
+				hist = [], 		// 
+				food, 			// Location of food.
+				score = 0, 		// User's score
+				speed = 2.5,	// Snake's speed
+				hscore = localStorage.snakeHighScore || 0;
+
+
+			function draw() {
+				//Make bg black
+				ctx.fillStyle = "black";
+				ctx.fillRect(0, 0, w, h);
+				
+				//Draw blue border.
+				ctx.strokeStyle = "blue";
+				ctx.strokeRect(20, 20, w-40, h-40);
+
+				px = snake[0][0];
+				py = snake[0][1];
+
+				//Keep track of snake head's history.
+				var curr = hist.shift();
+				if (hist.length < grid/speed*len) {
+					hist.push([px, py]);
+				}
+
+				//Update Snake's speed and direction.
+				if (cspeedX != speedX || cspeedY != speedY) {
+					if (Math.abs(Math.floor((px-10)/grid)*grid+10 - px) < 2 && 
+						Math.abs(Math.floor((py-10)/grid)*grid+10 - py) < 2) {
+						speedY = cspeedY;
+						speedX = cspeedX;
+					}
+				}
+
+				// It snake collects food then update score and snake's body.
+				if ((px - food[0]) * (px - food[0]) + 
+					(py - food[1]) * (py - food[1]) < 10) {
+					fx = 30 + Math.floor(Math.random() * (w-40) / grid) * grid;
+					fy = 30 + Math.floor(Math.random() * (h-40) / grid) * grid;
+
+					food = [fx, fy];
+					len++;
+					snake.length++;
+					score++;
+					hscore = localStorage.snakeHighScore;
+					if (!hscore || hscore < score) {
+						hscore = score;
+						localStorage.snakeHighScore = score;
+					};
+				}
+
+				if (20 < px + speedX && 
+					px + speedX < w-20)
+					px += speedX;
+				else if (px + speedX <= 20) {
+					px = w-20;
+					px += speedX;
+				} else if (px + speed >= w-20) {
+					px = 20;
+					px += speedX;
+				}
+				if (20 < py + speedY && 
+					py + speedY < h-20)
+					py += speedY;
+				else if (py + speedY <= 20) {
+					py = h-20;
+					py += speedY;
+				} else if (py + speedY >= h-20) {
+					py = 20;
+					py += speedY;
+				}
+				hist.push([px, py]);
+
+				// Update the snake's body.
+				for (var i = 0; i < snake.length; i++) {
+					snake[i] = hist[hist.length - 1 - i*grid/speed];
+				}
+
+				//Check if the head of the snake touch its body.
+				var x = (px-30)/20, y = (py-30)/20;
+				for (var i = 1; i < snake.length; i++) {
+					if (x == (snake[i][0]-30)/20 && 
+						y == (snake[i][1]-30)/20) {
+						gameOver();
+						console.log("gameover");
+						return;
+					}
+				}
+				
+				if (Math.abs(Math.floor((px-10)/grid)*grid+10 - px) < 1 && 
+					Math.abs(Math.floor((py-10)/grid)*grid+10 - py) < 1) {
+					speedY = 0;
+					speedX = 0;
+				}
+
+				//Draw food.
+				ctx.beginPath();
+				ctx.arc(food[0], food[1], r*.75, 0, 360);
+				ctx.fillStyle = "red";
+				ctx.fill();
+
+				//Draw Snake.
+				ctx.beginPath();
+				for (var i = 0; i < snake.length; i++) {
+					ctx.moveTo(snake[i][0] + r, snake[i][1]);
+					ctx.arc(snake[i][0], snake[i][1], r, 0, 360);
+				}
+				ctx.fillStyle = "yellow";
+				ctx.fill();
+
+				//Display the score.
+				ctx.fillStyle = "red";
+				ctx.font = "1.5em arial";
+				ctx.fillText("Score : " + score, w-100, 50);
+				ctx.textAlign="left";
+				ctx.fillText("High Score : " + hscore, 30, 50);
+				ctx.textAlign="center";
+
+				
+				ctx.fillStyle = "black";
+				ctx.fillRect(0, 0, w, 20);
+				ctx.fillRect(0, 0, 20, h);
+				ctx.fillRect(0, h-20, w, 20);
+				ctx.fillRect(w-20, 0, 20, h);
+
+				//Draw blue border.
+				ctx.strokeStyle = "blue";
+				ctx.strokeRect(20, 20, w-40, h-40);
+
+				anim = requestAnimationFrame(draw);
+			}
+
+			function pause() {
+				if (!anim) return;
+				//Stop play the animations.
+				cancelAnimationFrame(anim);
+				
+				//Make bg black
+				ctx.fillStyle = "black";
+				ctx.fillRect(0, 0, w, h);
+				
+				//Draw blue border.
+				ctx.strokeStyle = "blue";
+				ctx.strokeRect(20, 20, w-40, h-40);
+
+				//Draw food.
+				ctx.beginPath();
+				ctx.arc(food[0], food[1], r*.75, 0, 360);
+				ctx.fillStyle = "red";
+				ctx.fill();
+
+				//Draw Snake.
+				ctx.beginPath();
+				for (var i = 0; i < snake.length; i++) {
+					ctx.moveTo(snake[i][0] + r, snake[i][1]);
+					ctx.arc(snake[i][0], snake[i][1], r, 0, 360);
+				}
+				ctx.fillStyle = "yellow";
+				ctx.fill();
+
+				ctx.fillStyle = "green";
+				ctx.font = "2.5em arial";
+				ctx.fillText("Game Paused", w/2, h/2);
+				ctx.font = "1.75em arial";
+				ctx.fillText("Press Space or Enter key to resume.", w/2, h/2+50);
+
+				window.onkeydown = function(e) {
+					if (e.keyCode == 32 || e.keyCode == 13) resume();
+				}
+			}
+
+			function gameOver() {
+				cancelAnimationFrame(anim);
+				anim = null;
+				//Make bg black
+				ctx.fillStyle = "black";
+				ctx.fillRect(0, 0, w, h);
+				
+				//Draw blue border.
+				ctx.strokeStyle = "blue";
+				ctx.strokeRect(20, 20, w-40, h-40);
+
+				//Draw food.
+				ctx.beginPath();
+				ctx.arc(food[0], food[1], r*.75, 0, 360);
+				ctx.fillStyle = "red";
+				ctx.fill();
+
+				//Draw Snake.
+				ctx.beginPath();
+				for (var i = 0; i < snake.length; i++) {
+					ctx.moveTo(snake[i][0] + r, snake[i][1]);
+					ctx.arc(snake[i][0], snake[i][1], r, 0, 360);
+				}
+				ctx.fillStyle = "yellow";
+				ctx.fill();
+
+				ctx.fillStyle = "red";
+				ctx.font = "2.5em arial";
+				ctx.fillText("Game Over!!!", w/2, h/2-50);
+
+				ctx.fillStyle = "orange";
+				ctx.font = "2em arial";
+				ctx.fillText("Your final Score is " + score, w/2, h/2);
+				
+				ctx.fillStyle = "green";
+				ctx.font = "1.75em arial";
+				ctx.fillText("Press Space or Enter key to restart.", w/2, h/2+50);
+
+				window.onkeydown = function(e) {
+					if (e.keyCode == 32 || e.keyCode == 13) //Space or Enter key
+						window.location.reload();
+				};
+
+				var sc = localStorage.snakeHighScore;
+				if (!sc || sc < score)
+					localStorage.snakeHighScore = score;
+			}
+
+			function resume() {
+				anim = requestAnimationFrame(draw);
+				window.onkeydown = keydown;
+			}
+
+			document.body.onload = begin;
+			document.body.onblur = function() {
+				pause();
+			}
+
+		</script>
+	</body>
+</html>
