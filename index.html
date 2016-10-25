@@ -3,6 +3,7 @@
 	<head>
 		<title>Snake</title>
 		<link rel="stylesheet" type="text/css" href="SnakeStyle.css" />
+		<link rel="icon" href="favicon.png">
 	</head>
 	<body>
 		<h1>Snake Game</h1>
@@ -11,6 +12,10 @@
 		</canvas><br>
 		<div class="btn">
 			<a href="SnakeNew.html"><button type="button">Another version</button></a>
+		</div>
+		<div>
+			<!-- <span style="float: left;">Copyrights &copy; by shreyash14s</span> -->
+			<span style="float: right;">Game by Shreyash S Sarnayak</span>
 		</div>
 		<script type="text/javascript">
 			var canvas = document.getElementById('canvas'), 
@@ -52,6 +57,10 @@
 				ctx.fillStyle = "lightred";
 				ctx.font = "1.75em arial";
 				ctx.fillText("Click anywhere to begin.", w/2, h/2+50);
+
+				ctx.fillStyle = "white";
+				ctx.font = "0.85em arial";
+				ctx.fillText("Game by shreyash14s", w-75, h-5);
 
 				canvas.onclick = start;
 				window.onkeydown = function(e) {
@@ -225,7 +234,6 @@
 				ctx.textAlign="left";
 				ctx.fillText("High Score : " + hscore, 30, 50);
 				ctx.textAlign="center";
-
 				
 				ctx.fillStyle = "black";
 				ctx.fillRect(0, 0, w, 20);
@@ -237,10 +245,15 @@
 				ctx.strokeStyle = "blue";
 				ctx.strokeRect(20, 20, w-40, h-40);
 
+				ctx.fillStyle = "white";
+				ctx.font = "0.85em arial";
+				ctx.fillText("Game by shreyash14s", w-75, h-5);
+
 				anim = requestAnimationFrame(draw);
 			}
 
 			function pause() {
+				// console.log("Pausing..");
 				if (!anim) return;
 				//Stop play the animations.
 				cancelAnimationFrame(anim);
@@ -273,6 +286,10 @@
 				ctx.fillText("Game Paused", w/2, h/2);
 				ctx.font = "1.75em arial";
 				ctx.fillText("Press Space or Enter key to resume.", w/2, h/2+50);
+
+				ctx.fillStyle = "white";
+				ctx.font = "0.85em arial";
+				ctx.fillText("Game by shreyash14s", w-75, h-5);
 
 				window.onkeydown = function(e) {
 					if (e.keyCode == 32 || e.keyCode == 13) resume();
@@ -317,6 +334,10 @@
 				ctx.font = "1.75em arial";
 				ctx.fillText("Press Space or Enter key to restart.", w/2, h/2+50);
 
+				ctx.fillStyle = "white";
+				ctx.font = "0.85em arial";
+				ctx.fillText("Game by shreyash14s", w-75, h-5);
+
 				window.onkeydown = function(e) {
 					if (e.keyCode == 32 || e.keyCode == 13) //Space or Enter key
 						window.location.reload();
@@ -335,8 +356,9 @@
 			document.body.onload = begin;
 			document.body.onblur = function() {
 				pause();
+				// console.log("Pausing");
 			}
-
+			console.log("Game by Shreyash S Sarnayak");
 		</script>
 	</body>
 </html>
